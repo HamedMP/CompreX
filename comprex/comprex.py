@@ -87,8 +87,11 @@ class CompreX(BaseEstimator, ClusterMixin):
 
         return self.partition_init
 
-    def predict(self):
+    def predict(self, X, y=None):
         return self.partition_init.find_anomalies()
+
+    def score(self, X, y=None):
+        pass
 
     @staticmethod
     def _build_code_tables(partition):
