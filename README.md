@@ -21,6 +21,8 @@ When dealing with high dimensional categorical data, features which have +1 mill
 
 - [x] Initial implementation, v1.0.0
 - [ ] Check correctness! 
+- [ ] Add `Docstrings`
+- [ ] Publish documentation 
 - [ ] Finish Scikit-learn style api compatibility issues
 - [ ] Upload to PyPi
 
