@@ -1,5 +1,5 @@
 import logging
-from code_table import CT
+from comprex.code_table import CT
 import numpy as np
 
 rng = np.random.RandomState(2018)
@@ -34,7 +34,7 @@ class FeatureSet:
         self.patterns_list = patterns_list  # if type(patterns_list) == list else [patterns_list]
         self.patterns_usage_count = features_usage_count
         self.grouped = grouped
-        self.cardinality = len(features_list)
+        self.cardinality = len(features_list) if type(features_list) == list else 1
         self.n = n
 
         if X is not None and temp is False:
@@ -46,7 +46,7 @@ class FeatureSet:
         return str(self)
 
     def __str__(self):
-        return 'FS__' + '__'.join(self.features) if type(self.features) == list else self.features
+        return 'FS__' + '__'.join(self.features)  # if type(self.features) == list else self.features
 
     def __repr__(self):
         return str(self)

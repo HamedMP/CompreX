@@ -1,6 +1,6 @@
 import logging
 import numpy as np
-from feature_set import FeatureSet
+from comprex.feature_set import FeatureSet
 
 rng = np.random.RandomState(2018)
 
@@ -44,7 +44,7 @@ class Partition:
         self.IG = None
 
     def __str__(self):
-        return 'P__' + (str(self.feature_sets))
+        return 'P__' + (str([fs.name for fs in self.feature_sets]))
 
     def __repr__(self):
         return str(self)

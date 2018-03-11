@@ -6,20 +6,20 @@ import logging
 import numpy as np
 import pandas as pd
 import sklearn
-from sklearn.base import BaseEstimator, ClusterMixin
+from sklearn.base import BaseEstimator, ClassifierMixin, ClusterMixin
 from sklearn.utils.estimator_checks import check_estimator
 from sklearn.utils import check_array, check_random_state
 
-from partition import Partition
-from feature_set import FeatureSet
-from code_table import CT
+from comprex.partition import Partition
+from comprex.feature_set import FeatureSet
+from comprex.code_table import CT
 
 rng = np.random.RandomState(2018)
 
 ___author___ = 'HamedMP'
 
 
-class CompreX(BaseEstimator, ClusterMixin):
+class CompreX(BaseEstimator, ClassifierMixin):
     def __init__(self,
                  logging_level=logging.INFO):
         self.logger = logging.getLogger(__name__)
@@ -39,14 +39,17 @@ class CompreX(BaseEstimator, ClusterMixin):
             setattr(self, parameter, value)
         return self
 
-    def get_params(self, deep=True):
-        pass
+    # def get_params(self, deep=True):
+    #     pass
 
     def transform(self, X, y=None):
         """
         Initializes parameters required for the algorithm.
         Sets input data `X`,  columns of `X` as `features, number of samples in the dataset.
         Creates the initial partition with Elementary feature sets.
+
+        Parameters
+        ----------
         :param X: Input data, preferred to be a pandas data frame with categorical data types.
         :param y: Optional, for sklearn compatibility
         :return: The initial partition, can be discarded
@@ -57,7 +60,7 @@ class CompreX(BaseEstimator, ClusterMixin):
         self.n = self.X.shape[0]  # Number of tuples TODO check
         self.m = self.X.shape[1]  # Number of features
 
-        feature_set_tuples = [self.get_feature_name_domain_tuple(f) for f in X.columns]
+        feature_set_tuples = [self.get_feature_name_domain_tuple(f) for f in self.X.columns]
 
         self.partition_init = Partition(feature_set_tuples=feature_set_tuples,
                                         X=self.X,
@@ -70,10 +73,27 @@ class CompreX(BaseEstimator, ClusterMixin):
         """
         Main fit method, looping through each feature set tuples and merge the ones with highest
         information gain.
+
+        Parameters
+        ----------
         :param X: Optional, for sklearn compatibility
         :param y: Optional, for sklearn compatibility
         :return: The final partition
         """
+
+        self.X = pd.DataFrame(X)
+        self.y = y
+        self.features = self.X.columns
+        self.n = self.X.shape[0]  # Number of tuples TODO check
+        self.m = self.X.shape[1]  # Number of features
+
+        feature_set_tuples = [self.get_feature_name_domain_tuple(f) for f in self.X.columns]
+
+        self.partition_init = Partition(feature_set_tuples=feature_set_tuples,
+                                        X=self.X,
+                                        n=self.n,
+                                        logging_level=self.logging_level)
+
         while True:
             mfs = self.merge_feature_sets(self.partition_init)
             self.partition_init, n_merges = self.merge_code_tables(self.partition_init, mfs)
@@ -112,6 +132,10 @@ class CompreX(BaseEstimator, ClusterMixin):
         """
         Create unique combinations of feature sets, calculates the information gain
         and sort them in decreasing order.
+
+
+        Parameters
+        ----------
         :param _partition: The partition to merge its feature sets
         :return: Pandas data frame of merged feature sets in the decreasing order by
         their normalised information gain, with structure of columns=['F_i', 'F_j', 'F_ij', 'ig']
@@ -157,8 +181,8 @@ class CompreX(BaseEstimator, ClusterMixin):
             f_ij = merged_feature_sets.iloc[i]['F_ij']
             ig = merged_feature_sets.iloc[i]['ig']
 
-            if ig == 0:
-                break
+            # if ig == 0:
+            #     break
 
             self.logger.info('\n\n\n+++++++ F_ij: {} +++++++'.format(f_ij))
 
@@ -183,16 +207,22 @@ class CompreX(BaseEstimator, ClusterMixin):
             # Calculate new rows of C_i_j before appending U to it.
             for unique_row in unique_rows:  # L(12)
                 if unique_row[0] in list(c_hat_ij.index) and unique_row[1] in list(c_hat_ij.index):
-
+                    self.logger.debug('old c_hat_ij is \n{}'.format(c_hat_ij))
                     c_hat_ij = CT.update_c_hat(c_hat_ij, unique_row)
-
+                    self.logger.debug('new c_hat_ij is \n{}'.format(c_hat_ij))
                     # Add new_pattern to FS and CT
                     new_partition.update_feature_set(f_ij.name, self.X, c_hat_ij)
                     self.logger.info('Inner loop f_ij: {} and row: {}'.format(f_ij, unique_row))
                     self.logger.debug('C for feature set f_ij {} is \n{}'.format(f_ij, f_ij.CT.C))
 
-                    new_cost, old_cost = new_partition.calculate_total_cost(
-                        self.X), _partition_init.calculate_total_cost(self.X)
+                    new_cost= new_partition.calculate_total_cost(self.X)
+                    old_cost = _partition_init.calculate_total_cost(self.X)
+
+                    self.logger.debug('Old partition was:\n{}\nAnd new Partitions is\n{}'.format(
+                        [fsp.patterns_list for fsp in _partition_init.feature_sets],
+                        [fsp.patterns_list for fsp in new_partition.feature_sets]
+                    ))
+
                     if new_cost < old_cost:
                         self.logger.debug('New partition cost was lower by: {} '.format(old_cost - new_cost))
                         _partition_init = new_partition
