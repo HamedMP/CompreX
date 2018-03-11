@@ -7,7 +7,7 @@ A parameter-free anomaly detection using pattern-based compression
 
 Anomaly detection as one of the tasks in unsupervised learning is a hard task by itself, and adding categorical data which most of the algorithms requires encoding them makes it harder. 
 
-When dealing with high dimensional categorical data, features which have +1 million different values (which is my case) encoding becomes impractical. While researching for best approaches for dealing with this kind of datasets, I found **CompreX** [[1](1)] approach the most intuitive way to deal with the data by encode them using *shannon entropy* and *MDL (Minimum Description Length)*. 
+When dealing with high dimensional categorical data, features which have +1 million different values (which is my case) encoding becomes impractical. While researching for best approaches for dealing with this kind of datasets, I found **CompreX** [1] approach the most intuitive way to deal with the data by encode them using *shannon entropy* and *MDL (Minimum Description Length)*. 
 
 [1]: ./resources/fast-anomaly.pdf	"L. Akoglu, H. Tong, J. Vreeken, and C. Faloutsos. Fast and reliable anomaly detection incategorical data. 2012."
 
@@ -20,7 +20,7 @@ When dealing with high dimensional categorical data, features which have +1 mill
 ## Roadmap
 
 - [x] Initial implementation, v1.0.0
-- [ ] Check correctness! 
+- [ ] Add tests
 - [ ] Add `Docstrings`
 - [ ] Publish documentation 
 - [ ] Finish Scikit-learn style api compatibility issues
